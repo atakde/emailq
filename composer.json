@@ -1,0 +1,19 @@
+{
+    "name": "atakde/emailq",
+    "description": "Email queue",
+    "autoload": {
+        "psr-4": {
+            "EmailQ\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Atakan Demircioğlu"
+        }
+    ],
+    "require": {
+        "illuminate/database": "^10.40",
+        "phpmailer/phpmailer": "^6.9",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
