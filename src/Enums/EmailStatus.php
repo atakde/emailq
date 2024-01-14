@@ -4,7 +4,8 @@ namespace EmailQ\Enums;
 
 class EmailStatus
 {
-    const WAITING = 'waiting';
-    const SENT = 'sent';
-    const FAILED = 'failed';
+    public const WAITING = 'waiting';
+    public const SENT = 'sent';
+    public const FAILED = 'failed';
+    public const SCHEDULED = 'scheduled';
 }

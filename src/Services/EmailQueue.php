@@ -23,7 +23,7 @@ class EmailQueue
         return $email->delete();
     }
 
-    public function send(): void
+    public function sendQueuedEmails(): void
     {
         $emails = $this->getByStatus(EmailStatus::WAITING, QueueSettings::MAX_CHUNK_SIZE);
         $emailSender = new EmailSender();
@@ -37,6 +37,45 @@ class EmailQueue
                 $email->save();
             }
         }
+    }
+
+    public function schedule(array $params, string $date): bool
+    {
+        $email = new EmailModel();
+        $email->fill($params);
+        $email->status = EmailStatus::SCHEDULED;
+        $email->scheduled_at = $date;
+        return $email->save();
+    }
+
+    public function sendScheduledEmails(): void
+    {
+        $now = date('Y-m-d H:i:s');
+        $minutes = QueueSettings::SCHEDULED_EMAILS_RANGE_IN_MINUTES;
+        $to = date('Y-m-d H:i:s', strtotime($now . " + $minutes minutes"));
+        $emails = $this->getSchduledEmailsByRange($now, $to);
+
+        $emailSender = new EmailSender();
+        foreach ($emails as $email) {
+            $response = $emailSender->send($email);
+            if ($response) {
+                $email->status = EmailStatus::SENT;
+                $email->save();
+            } else {
+                $email->status = EmailStatus::FAILED;
+                $email->save();
+            }
+        }
+    }
+
+    public function getSchduledEmailsByRange(string $from, string $to)
+    {
+        $emails = EmailModel::where('status', EmailStatus::SCHEDULED)
+            ->where('scheduled_at', '>=', $from)
+            ->where('scheduled_at', '<=', $to)
+            ->get();
+
+        return $emails;
     }
 
     public function getByStatus(string $status, int $limit)
