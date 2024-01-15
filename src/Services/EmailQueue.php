@@ -3,7 +3,6 @@
 namespace EmailQ\Services;
 
 use EmailQ\Models\EmailModel;
-use Exception;
 use EmailQ\Enums\EmailStatus;
 use EmailQ\Services\EmailSender;
 use EmailQ\Enums\QueueSettings;
@@ -25,7 +24,7 @@ class EmailQueue
 
     public function sendQueuedEmails(): void
     {
-        $emails = $this->getByStatus(EmailStatus::WAITING, QueueSettings::MAX_CHUNK_SIZE);
+        $emails = $this->getByStatus(EmailStatus::WAITING, QueueSettings::$MAX_CHUNK_SIZE);
         $emailSender = new EmailSender();
         foreach ($emails as $email) {
             $response = $emailSender->send($email);
@@ -51,7 +50,7 @@ class EmailQueue
     public function sendScheduledEmails(): void
     {
         $now = date('Y-m-d H:i:s');
-        $minutes = QueueSettings::SCHEDULED_EMAILS_RANGE_IN_MINUTES;
+        $minutes = QueueSettings::$SCHEDULED_EMAILS_RANGE_IN_MINUTES;
         $to = date('Y-m-d H:i:s', strtotime($now . " + $minutes minutes"));
         $emails = $this->getSchduledEmailsByRange($now, $to);
 
@@ -81,5 +80,10 @@ class EmailQueue
     public function getByStatus(string $status, int $limit)
     {
         return EmailModel::where('status', $status)->limit($limit)->get();
+    }
+
+    public function setScheduleConfig(array $config)
+    {
+        QueueSettings::set($config);
     }
 }

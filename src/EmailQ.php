@@ -12,14 +12,28 @@ class EmailQ
 
     public function __construct(array $config = [])
     {
+        $this->setEmailQueue();
         $this->setConfig($config);
+        $this->setScheduleConfig($config);
         $this->initDBConnection();
+    }
+
+    private function setEmailQueue()
+    {
         $this->emailQueue = new EmailQueue();
     }
 
     public function setConfig(array $config)
     {
         $this->config = $config;
+    }
+
+    private function setScheduleConfig()
+    {
+        $this->emailQueue->setScheduleConfig([
+            'MAX_CHUNK_SIZE' => $this->config['MAX_CHUNK_SIZE'] ?? 5000,
+            'SCHEDULED_EMAILS_RANGE_IN_MINUTES' => $this->config['SCHEDULED_EMAILS_RANGE_IN_MINUTES'] ?? 5,
+        ]);
     }
 
     public function initDBConnection()
