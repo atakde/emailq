@@ -2,20 +2,21 @@
 
 namespace EmailQ;
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+use EmailQ\Services\DatabaseManager;
 use EmailQ\Services\EmailQueue;
 
 class EmailQ
 {
     private array $config;
     private EmailQueue $emailQueue;
+    private DatabaseManager $databaseManager;
 
     public function __construct(array $config = [])
     {
         $this->setEmailQueue();
         $this->setConfig($config);
         $this->setScheduleConfig($config);
-        $this->initDBConnection();
+        $this->initDBConnection($config);
     }
 
     private function setEmailQueue()
@@ -36,26 +37,14 @@ class EmailQ
         ]);
     }
 
-    public function initDBConnection()
+    private function initDBConnection($config)
     {
-        if (empty($this->config)) {
+        if (empty($config)) {
             throw new \Exception('Configurations are not set');
         }
 
-        $capsule = new Capsule();
-        $capsule->addConnection([
-            'driver' => $this->config['DB_DRIVER'],
-            'host' => $this->config['DB_HOST'],
-            'database' => $this->config['DB_NAME'],
-            'username' => $this->config['DB_USER'],
-            'password' => $this->config['DB_PASSWORD'],
-            'charset' => $this->config['DB_CHARSET'],
-            'collation' => $this->config['DB_COLLATION'],
-            'prefix' => '',
-        ]);
-
-        $capsule->setAsGlobal();
-        $capsule->bootEloquent();
+        $this->databaseManager = new DatabaseManager($config);
+        $this->databaseManager->connect();
     }
 
     public function queue($params)
