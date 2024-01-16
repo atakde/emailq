@@ -14,9 +14,23 @@ class EmailQueue
     {
         $this->validateFields($params);
 
-        $email = new EmailModel();
-        $email->fill($params);
-        return $email->save();
+        if ($this->isTemplate($params)) {
+            $email = new EmailModel();
+
+            $templateName = $params['template_name'];
+            $emailTemplateProcessor = new EmailTemplateProcessor();
+
+            unset($params['body'], $params['subject'], $params['template_name']);
+            $email->fill($params);
+            $email = $emailTemplateProcessor->applyReplacements($email, $templateName, $params);
+            $email->status = EmailStatus::WAITING;
+            return $email->save();
+        } else {
+            $email = new EmailModel();
+            $email->fill($params);
+            $email->status = EmailStatus::WAITING;
+            return $email->save();
+        }
     }
 
     private function validateFields(array $params)
@@ -27,8 +41,17 @@ class EmailQueue
         $this->validateEmailField('from', $params);
         $this->validateEmailField('reply_to', $params);
 
-        $this->validateStringField('subject', $params);
-        $this->validateStringField('body', $params);
+        if ($this->isTemplate($params)) {
+            $this->validateStringField('template_name', $params);
+        } else {
+            $this->validateStringField('subject', $params);
+            $this->validateStringField('body', $params);
+        }
+    }
+
+    private function isTemplate(array $params): bool
+    {
+        return !empty($params['template_name']);
     }
 
     private function validateEmailField(string $key, array $params)
