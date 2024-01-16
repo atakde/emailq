@@ -10,7 +10,7 @@ use EmailQ\Helpers\Validator;
 
 class EmailQueue
 {
-    public function add(array $params): bool
+    public function add(array $params, $status = EmailStatus::WAITING): bool
     {
         $this->validateFields($params);
 
@@ -23,12 +23,12 @@ class EmailQueue
             unset($params['body'], $params['subject']);
             $email->fill($params);
             $email = $emailTemplateProcessor->applyReplacements($email, $templateName, $params);
-            $email->status = EmailStatus::WAITING;
+            $email->status = $status;
             return $email->save();
         } else {
             $email = new EmailModel();
             $email->fill($params);
-            $email->status = EmailStatus::WAITING;
+            $email->status = $status;
             return $email->save();
         }
     }
@@ -96,13 +96,17 @@ class EmailQueue
         }
     }
 
-    public function schedule(array $params, string $date): bool
+    public function schedule(array $params): bool
     {
-        $email = new EmailModel();
-        $email->fill($params);
-        $email->status = EmailStatus::SCHEDULED;
-        $email->scheduled_at = $date;
-        return $email->save();
+        $this->validateScheduleDate($params['scheduled_at']);
+        return $this->add($params, EmailStatus::SCHEDULED);
+    }
+
+    private function validateScheduleDate(string $date)
+    {
+        if (!Validator::validateDate($date)) {
+            throw new \Exception('Invalid date');
+        }
     }
 
     public function sendScheduledEmails(): void

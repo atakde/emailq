@@ -64,7 +64,8 @@ class EmailQ
 
     public function schedule($date, $params)
     {
-        return $this->emailQueue->schedule($date, $params);
+        $params = array_merge($params, ['scheduled_at' => $date]);
+        return $this->emailQueue->schedule($params);
     }
 
     public function sendScheduledEmails()

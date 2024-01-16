@@ -18,7 +18,8 @@ class EmailModel extends Eloquent
         'headers',
         'status',
         'reply_to',
-        'template_name'
+        'template_name',
+        'scheduled_at',
     ];
     protected $casts = [
         'headers' => 'array',
