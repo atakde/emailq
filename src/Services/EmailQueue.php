@@ -20,7 +20,7 @@ class EmailQueue
             $templateName = $params['template_name'];
             $emailTemplateProcessor = new EmailTemplateProcessor();
 
-            unset($params['body'], $params['subject'], $params['template_name']);
+            unset($params['body'], $params['subject']);
             $email->fill($params);
             $email = $emailTemplateProcessor->applyReplacements($email, $templateName, $params);
             $email->status = EmailStatus::WAITING;
