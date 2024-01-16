@@ -24,6 +24,18 @@ class EmailSender
             $mail->setFrom($email->from, $email->from_name);
             $mail->addAddress($email->to);
 
+            if (!empty($email->cc)) {
+                $mail->addCC($email->cc);
+            }
+
+            if (!empty($email->bcc)) {
+                $mail->addBCC($email->bcc);
+            }
+
+            if (!empty($email->reply_to)) {
+                $mail->addReplyTo($email->reply_to);
+            }
+
             $mail->isHTML(true);
             $mail->Subject = $email->subject;
             $mail->Body    = $email->body;

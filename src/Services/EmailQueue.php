@@ -3,17 +3,52 @@
 namespace EmailQ\Services;
 
 use EmailQ\Models\EmailModel;
-use EmailQ\Enums\EmailStatus;
+use EmailQ\Enums\EmailStatus as EmailStatus;
 use EmailQ\Services\EmailSender;
 use EmailQ\Enums\QueueSettings;
+use EmailQ\Helpers\Validator;
 
 class EmailQueue
 {
     public function add(array $params): bool
     {
+        $this->validateFields($params);
+
         $email = new EmailModel();
         $email->fill($params);
         return $email->save();
+    }
+
+    private function validateFields(array $params)
+    {
+        $this->validateEmailField('to', $params);
+        $this->validateEmailField('cc', $params);
+        $this->validateEmailField('bcc', $params);
+        $this->validateEmailField('from', $params);
+        $this->validateEmailField('reply_to', $params);
+
+        $this->validateStringField('subject', $params);
+        $this->validateStringField('body', $params);
+    }
+
+    private function validateEmailField(string $key, array $params)
+    {
+        $required = ['to', 'from'];
+        if (!empty($params[$key])) {
+            if (!Validator::validateEmail($params[$key])) {
+                throw new \Exception("Invalid $key email");
+            }
+        } elseif (in_array($key, $required)) {
+            throw new \Exception("$key email is required");
+        }
+    }
+
+    private function validateStringField(string $key, array $params)
+    {
+        $required = ['subject'];
+        if (in_array($key, $required) && empty($params[$key])) {
+            throw new \Exception("$key is required");
+        }
     }
 
     public function remove(int $id): bool
@@ -77,7 +112,7 @@ class EmailQueue
         return $emails;
     }
 
-    public function getByStatus(string $status, int $limit)
+    public function getByStatus(EmailStatus $status, int $limit)
     {
         return EmailModel::where('status', $status)->limit($limit)->get();
     }

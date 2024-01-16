@@ -2,10 +2,10 @@
 
 namespace EmailQ\Enums;
 
-class EmailStatus
+enum EmailStatus: string
 {
-    public const WAITING = 'waiting';
-    public const SENT = 'sent';
-    public const FAILED = 'failed';
-    public const SCHEDULED = 'scheduled';
+    case WAITING = 'waiting';
+    case SENT = 'sent';
+    case FAILED = 'failed';
+    case SCHEDULED = 'scheduled';
 }
