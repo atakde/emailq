@@ -24,7 +24,6 @@ class EmailQueue
         return $this->add($params, EmailStatus::SCHEDULED);
     }
 
-
     private function isTemplate(array $params): bool
     {
         return !empty($params['template_name']);
