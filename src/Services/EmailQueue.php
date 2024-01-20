@@ -26,6 +26,10 @@ class EmailQueue
             $email->status = $status;
             return $email->save();
         } else {
+            if (!empty(QueueSettings::$TRACKING_IMAGE)) {
+                $params['body'] .= ' <p><img src="' . QueueSettings::$TRACKING_IMAGE . '" /></p>';
+            }
+
             $email = new EmailModel();
             $email->fill($params);
             $email->status = $status;

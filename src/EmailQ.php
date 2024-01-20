@@ -34,6 +34,7 @@ class EmailQ
         $this->emailQueue->setScheduleConfig([
             'MAX_CHUNK_SIZE' => $this->config['MAX_CHUNK_SIZE'] ?? 5000,
             'SCHEDULED_EMAILS_RANGE_IN_MINUTES' => $this->config['SCHEDULED_EMAILS_RANGE_IN_MINUTES'] ?? 5,
+            'TRACKING_IMAGE' => $this->config['TRACKING_IMAGE'] ?? '',
         ]);
     }
 
