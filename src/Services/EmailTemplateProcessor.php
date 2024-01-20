@@ -29,7 +29,7 @@ class EmailTemplateProcessor implements ProcessorInterface
 
     public function validateFields(array $params)
     {
-        Validator::validateRequired($params, ['to', 'from', 'subject', 'template_name']);
+        Validator::validateRequired($params, ['to', 'from', 'template_name']);
         Validator::validateEmailFields($params, ['to', 'cc', 'bcc', 'from', 'reply_to']);
         Validator::validateDateFields($params, ['scheduled_at']);
     }
