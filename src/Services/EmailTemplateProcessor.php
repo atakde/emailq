@@ -13,6 +13,8 @@ class EmailTemplateProcessor implements ProcessorInterface
 {
     public function create($params, $status = EmailStatus::WAITING)
     {
+        $this->validateFields($params);
+
         $templateName = $params['template_name'];
 
         unset($params['body'], $params['subject']);
@@ -29,6 +31,7 @@ class EmailTemplateProcessor implements ProcessorInterface
     {
         Validator::validateRequired($params, ['to', 'from', 'subject', 'template_name']);
         Validator::validateEmailFields($params, ['to', 'cc', 'bcc', 'from', 'reply_to']);
+        Validator::validateDateFields($params, ['scheduled_at']);
     }
 
     public function applyReplacements(EmailModel $email, string $templateName, array $replacements): EmailModel

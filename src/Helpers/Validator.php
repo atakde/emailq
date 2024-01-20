@@ -29,6 +29,17 @@ class Validator
         }
     }
 
+    public static function validateDateFields(array $params, array $fields): void
+    {
+        foreach ($fields as $key) {
+            if (!empty($params[$key])) {
+                if (!self::validateDate($params[$key])) {
+                    throw new \Exception("Invalid $key date");
+                }
+            }
+        }
+    }
+
     public static function validateDate(string $date): bool
     {
         $now = new \DateTime();

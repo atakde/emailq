@@ -26,6 +26,7 @@ class EmailProcessor implements ProcessorInterface
     {
         Validator::validateRequired($params, ['to', 'from', 'subject', 'body']);
         Validator::validateEmailFields($params, ['to', 'cc', 'bcc', 'from', 'reply_to']);
+        Validator::validateDateFields($params, ['scheduled_at']);
     }
 
     private function addTrackingImage(array $params): array

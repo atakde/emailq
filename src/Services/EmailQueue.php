@@ -19,6 +19,12 @@ class EmailQueue
         }
     }
 
+    public function schedule(array $params): bool
+    {
+        return $this->add($params, EmailStatus::SCHEDULED);
+    }
+
+
     private function isTemplate(array $params): bool
     {
         return !empty($params['template_name']);
@@ -44,15 +50,6 @@ class EmailQueue
                 $email->save();
             }
         }
-    }
-
-    public function schedule(array $params): bool
-    {
-        if (!Validator::validateDate($params['scheduled_at'])) {
-            throw new \Exception('Invalid date');
-        }
-
-        return $this->add($params, EmailStatus::SCHEDULED);
     }
 
     public function sendScheduledEmails(): void
