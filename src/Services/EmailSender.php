@@ -20,6 +20,7 @@ class EmailSender
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port       = 587;
             $mail->SMTPSecure = 'tls';
+            $mail->CharSet = 'UTF-8';
 
             $mail->setFrom($email->from, $email->from_name);
             $mail->addAddress($email->to);
