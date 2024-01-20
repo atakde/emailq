@@ -2,12 +2,35 @@
 
 namespace EmailQ\Services;
 
+use EmailQ\Enums\EmailStatus;
 use EmailQ\Enums\QueueSettings;
+use EmailQ\Helpers\Validator;
+use EmailQ\Interfaces\ProcessorInterface;
 use EmailQ\Models\EmailModel;
 use EmailQ\Services\TemplateService;
 
-class EmailTemplateProcessor
+class EmailTemplateProcessor implements ProcessorInterface
 {
+    public function create($params, $status = EmailStatus::WAITING)
+    {
+        $templateName = $params['template_name'];
+
+        unset($params['body'], $params['subject']);
+
+        $email = new EmailModel();
+        $email->fill($params);
+        $email = $this->applyReplacements($email, $templateName, $params);
+        $email->status = $status;
+
+        return $email->save();
+    }
+
+    public function validateFields(array $params)
+    {
+        Validator::validateRequired($params, ['to', 'from', 'subject', 'template_name']);
+        Validator::validateEmailFields($params, ['to', 'cc', 'bcc', 'from', 'reply_to']);
+    }
+
     public function applyReplacements(EmailModel $email, string $templateName, array $replacements): EmailModel
     {
         $template = (new TemplateService())->getByName($templateName);

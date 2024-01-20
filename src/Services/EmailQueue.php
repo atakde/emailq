@@ -12,70 +12,16 @@ class EmailQueue
 {
     public function add(array $params, $status = EmailStatus::WAITING): bool
     {
-        $this->validateFields($params);
-
         if ($this->isTemplate($params)) {
-            $email = new EmailModel();
-
-            $templateName = $params['template_name'];
-            $emailTemplateProcessor = new EmailTemplateProcessor();
-
-            unset($params['body'], $params['subject']);
-            $email->fill($params);
-            $email = $emailTemplateProcessor->applyReplacements($email, $templateName, $params);
-            $email->status = $status;
-            return $email->save();
+            return (new EmailTemplateProcessor())->create($params, $status);
         } else {
-            if (!empty(QueueSettings::$TRACKING_IMAGE)) {
-                $params['body'] .= ' <p><img src="' . QueueSettings::$TRACKING_IMAGE . '" /></p>';
-            }
-
-            $email = new EmailModel();
-            $email->fill($params);
-            $email->status = $status;
-            return $email->save();
-        }
-    }
-
-    private function validateFields(array $params)
-    {
-        $this->validateEmailField('to', $params);
-        $this->validateEmailField('cc', $params);
-        $this->validateEmailField('bcc', $params);
-        $this->validateEmailField('from', $params);
-        $this->validateEmailField('reply_to', $params);
-
-        if ($this->isTemplate($params)) {
-            $this->validateStringField('template_name', $params);
-        } else {
-            $this->validateStringField('subject', $params);
-            $this->validateStringField('body', $params);
+            return (new EmailProcessor())->create($params, $status);
         }
     }
 
     private function isTemplate(array $params): bool
     {
         return !empty($params['template_name']);
-    }
-
-    private function validateEmailField(string $key, array $params)
-    {
-        $required = ['to', 'from'];
-        if (!empty($params[$key])) {
-            if (!Validator::validateEmail($params[$key])) {
-                throw new \Exception("Invalid $key email");
-            }
-        } elseif (in_array($key, $required)) {
-            throw new \Exception("$key email is required");
-        }
-    }
-
-    private function validateStringField(string $key, array $params)
-    {
-        $required = ['subject'];
-        if (in_array($key, $required) && empty($params[$key])) {
-            throw new \Exception("$key is required");
-        }
     }
 
     public function remove(int $id): bool
@@ -102,15 +48,11 @@ class EmailQueue
 
     public function schedule(array $params): bool
     {
-        $this->validateScheduleDate($params['scheduled_at']);
-        return $this->add($params, EmailStatus::SCHEDULED);
-    }
-
-    private function validateScheduleDate(string $date)
-    {
-        if (!Validator::validateDate($date)) {
+        if (!Validator::validateDate($params['scheduled_at'])) {
             throw new \Exception('Invalid date');
         }
+
+        return $this->add($params, EmailStatus::SCHEDULED);
     }
 
     public function sendScheduledEmails(): void
